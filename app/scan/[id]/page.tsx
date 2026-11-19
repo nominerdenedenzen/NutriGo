@@ -6,6 +6,8 @@ import { db } from "@/db";
 import { scans } from "@/db/schema";
 import { supabase, PHOTO_BUCKET } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import RecipeButton from "./RecipeButton";
+
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -50,11 +52,33 @@ export default async function ScanResultPage({
         Uploaded {scan.createdAt.toLocaleString()}
       </p>
 
-      {/* Week 3: the ingredient list from Hugging Face goes here. */}
+      {/* Ingredients detected by the Hugging Face vision model */}
+      <section className="w-full max-w-md">
+        <h2 className="mb-3 text-xl font-semibold">Ingredients found</h2>
+        {scan.ingredients && scan.ingredients.length > 0 ? (
+          <ul className="flex flex-wrap gap-2">
+            {scan.ingredients.map((item) => (
+              <li
+                key={item}
+                className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800"
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-neutral-500">
+            No ingredients detected. Try a clearer photo of the food.
+          </p>
+        )}
+      </section>
 
       <Button render={<Link href="/scan" />} variant="outline">
         Upload another photo
       </Button>
+      <RecipeButton ingredients={scan.ingredients ?? []} />
+
+
     </main>
   );
 }

@@ -2,12 +2,12 @@ import { auth } from "@clerk/nextjs/server";
 import { supabase, PHOTO_BUCKET } from "@/lib/supabase";
 import { db } from "@/db";
 import { scans } from "@/db/schema";
+import { extractIngredientsFromImage } from "@/lib/extractIngredient";
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(request: Request) {
-  // Who is uploading? Read it on the server, never trust the browser.
   const { userId } = await auth();
   if (!userId) {
     return Response.json({ error: "Please sign in first." }, { status: 401 });
@@ -26,7 +26,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "Photo is too big (max 5 MB)." }, { status: 400 });
   }
 
-  // Each user gets their own folder: fridge-photos/<userId>/<random>.jpg
   const ext = file.type.split("/")[1];
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
 
@@ -39,16 +38,27 @@ export async function POST(request: Request) {
     return Response.json({ error: "Upload failed, try again." }, { status: 500 });
   }
 
-  // Remember the upload in the scans table.
+  // Convert uploaded file to Base64 data URL for Hugging Face vision model
+  const bytes = await file.arrayBuffer();
+  const base64 = Buffer.from(bytes).toString("base64");
+  const dataUrl = `data:${file.type};base64,${base64}`;
+
+  // Extract ingredients once and save directly into scans.ingredients
+  const ingredients = await extractIngredientsFromImage(dataUrl);
+
   const [scan] = await db
     .insert(scans)
-    .values({ userId, photoPath: path })
-    .returning({ id: scans.id });
+    .values({ userId, photoPath: path, ingredients })
+    .returning({ id: scans.id, ingredients: scans.ingredients });
 
-  // The bucket is private, so make a temporary link (1 hour) to show the photo.
   const { data: signed } = await supabase.storage
     .from(PHOTO_BUCKET)
     .createSignedUrl(path, 60 * 60);
 
-  return Response.json({ scanId: scan.id, path, url: signed?.signedUrl ?? null });
+  return Response.json({
+    scanId: scan.id,
+    path,
+    url: signed?.signedUrl ?? null,
+    ingredients: scan.ingredients,
+  });
 }
