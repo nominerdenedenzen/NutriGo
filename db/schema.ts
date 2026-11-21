@@ -1,4 +1,7 @@
-import { pgTable, uuid, text, timestamp, jsonb, integer, real, primaryKey } from "drizzle-orm/pg-core";
+import type { WeekDay } from "@/lib/weekDays";
+import { pgTable, uuid, text, timestamp, jsonb, integer, real, primaryKey, boolean, unique } from "drizzle-orm/pg-core";
+
+export type Nutrition = { calories: number; protein: number; carbs: number; fat: number };
 
 // One row per photo a user uploads.
 export const scans = pgTable("scans", {
@@ -18,8 +21,41 @@ export const recipes = pgTable("recipes", {
   ingredients: jsonb("ingredients").$type<{ name: string; measure: string }[]>(),
   instructions: text("instructions"),
   servings: integer("servings").default(2),
-  nutrition: jsonb("nutrition"), // filled in week 5
+  nutrition: jsonb("nutrition").$type<Nutrition>(), // per serving (AI recipes: Gemini's estimate)
+  // Extra details for AI-written recipes
+  description: text("description"),
+  cookingTime: text("cooking_time"), // e.g. "20 minutes"
+  difficulty: text("difficulty"), // easy | medium | hard
+  createdBy: text("created_by"), // Clerk user ID of who asked Gemini for it
+  missingIngredients: jsonb("missing_ingredients").$type<string[]>(), // what that user didn't have
+  tips: jsonb("tips").$type<string[]>(), // short cooking tips
+  createdAt: timestamp("created_at").defaultNow(),
 });
+
+// One row per meal a user put on their weekly plan.
+export const mealPlan = pgTable("meal_plan", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(),
+  recipeId: text("recipe_id")
+    .notNull()
+    .references(() => recipes.id, { onDelete: "cascade" }),
+  day: text("day").$type<WeekDay>().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// One row per item on a user's grocery list.
+export const groceryItems = pgTable(
+  "grocery_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id").notNull(),
+    name: text("name").notNull(), // lowercase ingredient name
+    forRecipes: jsonb("for_recipes").$type<string[]>().default([]).notNull(), // recipe titles that need it
+    checked: boolean("checked").default(false).notNull(), // true = bought
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.userId, t.name)], // each item only once per user
+);
 
 // Recipes a user saved with the heart button.
 export const favourites = pgTable(

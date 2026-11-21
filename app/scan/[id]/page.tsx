@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Camera } from "lucide-react";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { scans } from "@/db/schema";
@@ -33,52 +34,60 @@ export default async function ScanResultPage({
     .from(PHOTO_BUCKET)
     .createSignedUrl(scan.photoPath, 60 * 60);
 
-  return (
-    <main className="flex flex-1 flex-col items-center gap-6 px-4 py-12">
-      <h1 className="text-3xl font-semibold">Your photo</h1>
+  const uploadedAt = scan.createdAt.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
+  // The uploaded photo, shown at the top of the left column
+  const photo = (
+    <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#1e3226]/5">
       {signed?.signedUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={signed.signedUrl}
           alt="Your uploaded ingredients"
-          className="max-h-[480px] w-full max-w-md rounded-2xl object-contain shadow"
+          className="aspect-[4/3] w-full object-cover"
         />
       ) : (
-        <p className="text-red-600">Could not load the photo. Try refreshing the page.</p>
+        <div className="flex aspect-[4/3] items-center justify-center bg-[#ECECE6] p-6 text-center text-sm text-red-600">
+          Could not load the photo. Try refreshing the page.
+        </div>
       )}
+      <div className="flex items-center gap-2 px-5 py-3 text-xs text-[#1e3226]/60">
+        <Camera className="h-3.5 w-3.5" />
+        Scanned {uploadedAt}
+      </div>
+    </div>
+  );
 
-      <p className="text-sm text-neutral-500">
-        Uploaded {scan.createdAt.toLocaleString()}
-      </p>
+  return (
+    <main className="flex-1 bg-[#ECECE6]">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+        {/* Page header */}
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="font-script text-2xl text-[#6b8f5e]">Your scan</p>
+            <h1 className="font-display text-4xl font-semibold text-[#1e3226] sm:text-5xl">
+              What&apos;s cooking today?
+            </h1>
+          </div>
+          <Button
+            render={<Link href="/scan" />}
+            nativeButton={false}
+            variant="outline"
+            className="rounded-full border-[#1e3226]/20 bg-white text-[#1e3226] hover:bg-[#1e3226]/5"
+          >
+            <Camera className="h-4 w-4" />
+            Scan another photo
+          </Button>
+        </div>
 
-      {/* Ingredients detected by the Hugging Face vision model */}
-      <section className="w-full max-w-md">
-        <h2 className="mb-3 text-xl font-semibold">Ingredients found</h2>
-        {scan.ingredients && scan.ingredients.length > 0 ? (
-          <ul className="flex flex-wrap gap-2">
-            {scan.ingredients.map((item) => (
-              <li
-                key={item}
-                className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800"
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-neutral-500">
-            No ingredients detected. Try a clearer photo of the food.
-          </p>
-        )}
-      </section>
-
-      <Button render={<Link href="/scan" />} variant="outline">
-        Upload another photo
-      </Button>
-      <RecipeButton ingredients={scan.ingredients ?? []} />
-
-
+        {/* Photo + ingredients (left) and recipes (right) */}
+        <RecipeButton ingredients={scan.ingredients ?? []} photo={photo} />
+      </div>
     </main>
   );
 }

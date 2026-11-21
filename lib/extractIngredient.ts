@@ -1,83 +1,48 @@
-// Reads ingredients from a food photo using a Hugging Face vision model
-// (SmolVLM) running locally via transformers.js — free, no API key, no credits.
-// The model (~500 MB) downloads once on first use and is cached after that.
-import {
-  AutoProcessor,
-  AutoModelForVision2Seq,
-  RawImage,
-  type Processor,
-  type PreTrainedModel,
-} from '@huggingface/transformers';
+// Reads ingredients from a food photo using Google Gemini (it can understand images).
+// Needs GEMINI_API_KEY in .env.local (free key from https://aistudio.google.com/apikey).
+import { GoogleGenAI, createPartFromBase64 } from '@google/genai';
 
-const MODEL_ID = process.env.HF_VISION_MODEL ?? 'HuggingFaceTB/SmolVLM-500M-Instruct';
+const MODEL_ID = 'gemini-3.5-flash-lite';
+const MAX_ITEMS = 20;
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const PROMPT =
   'Name every individual food item you can see in this image. Be specific: give the exact name of each one ' +
   '(for example potato, carrot, red onion, tomato), never general words like vegetables, fruit or food. ' +
-  'Answer with only a comma-separated list.';
+  'Answer with a JSON array of lowercase strings, e.g. ["tomato","garlic","basil"]. ' +
+  'If there is no food in the image, answer [].';
 
-// Words that are too general to be useful as an ingredient
-const GENERIC = new Set(['vegetable', 'vegetables', 'fruit', 'fruits', 'food', 'foods', 'meal', 'dish', 'ingredients']);
-const MAX_ITEMS = 12;
-
-// Load the model once and reuse it for every request
-let loading: Promise<{ processor: Processor; model: PreTrainedModel }> | null = null;
-function getModel() {
-  loading ??= (async () => {
-    const processor = await AutoProcessor.from_pretrained(MODEL_ID);
-    const model = await AutoModelForVision2Seq.from_pretrained(MODEL_ID, { dtype: 'q4' });
-    return { processor, model };
-  })().catch((err) => {
-    loading = null; // allow a retry next time
-    throw err;
-  });
-  return loading;
-}
-
-async function loadImage(imageUrlOrBase64: string) {
+// Turn a "data:image/png;base64,..." string or an https:// link into base64 + mime type
+async function toBase64(imageUrlOrBase64: string) {
   const match = imageUrlOrBase64.match(/^data:([^;]+);base64,(.+)$/);
-  if (match) {
-    const blob = new Blob([Buffer.from(match[2], 'base64')], { type: match[1] });
-    return RawImage.fromBlob(blob);
-  }
-  return RawImage.fromURL(imageUrlOrBase64);
-}
+  if (match) return { mimeType: match[1], data: match[2] };
 
-// Turn the model's free-text answer into a clean list, e.g.
-// "The ingredients are: tomato, two cloves of garlic and basil." -> ["tomato", "garlic", "basil"]
-function parseIngredients(text: string): string[] {
-  const body = text.includes(':') ? text.slice(text.indexOf(':') + 1) : text;
-  const items = body
-    .split(/,|\n|;|\band\b/i)
-    .map((s) =>
-      s
-        .replace(/^[\s\-*•\d.)]+/, '') // bullets / numbering
-        .replace(/^(?:.*\bthere (?:is|are)\s+)/i, '') // "On the left there are ..."
-        .replace(/^(?:a|an|the|some|two|three|four|five|several|few|pieces? of|cloves? of|slices? of)\s+/gi, '')
-        .replace(/[.!"]+$/g, '')
-        .trim()
-        .toLowerCase(),
-    )
-    .filter((s) => s.length > 1 && s.split(' ').length <= 4 && !GENERIC.has(s));
-  return [...new Set(items)].slice(0, MAX_ITEMS);
+  const res = await fetch(imageUrlOrBase64);
+  if (!res.ok) throw new Error(`Could not download image (${res.status})`);
+  const mimeType = res.headers.get('content-type') ?? 'image/jpeg';
+  const data = Buffer.from(await res.arrayBuffer()).toString('base64');
+  return { mimeType, data };
 }
 
 export async function extractIngredientsFromImage(imageUrlOrBase64: string): Promise<string[]> {
   try {
-    const { processor, model } = await getModel();
-    const image = await loadImage(imageUrlOrBase64);
+    const { mimeType, data } = await toBase64(imageUrlOrBase64);
 
-    const messages = [{ role: 'user', content: [{ type: 'image' }, { type: 'text', text: PROMPT }] }];
-    const text = processor.apply_chat_template(messages, { add_generation_prompt: true });
-    const inputs = await processor(text, [image]);
-
-    const output = (await model.generate({ ...inputs, max_new_tokens: 100, do_sample: false, repetition_penalty: 1.2 })) as any;
-    const promptLength = inputs.input_ids.dims.at(-1);
-    const [reply] = processor.batch_decode(output.slice(null, [promptLength, null]), {
-      skip_special_tokens: true,
+    const response = await ai.models.generateContent({
+      model: MODEL_ID,
+      contents: [createPartFromBase64(data, mimeType), PROMPT],
+      config: { responseMimeType: 'application/json', temperature: 0 },
     });
 
-    return parseIngredients(reply ?? '');
+    const list: unknown = JSON.parse(response.text ?? '[]');
+    if (!Array.isArray(list)) return [];
+
+    const items = list
+      .filter((s): s is string => typeof s === 'string')
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length > 1);
+    return [...new Set(items)].slice(0, MAX_ITEMS);
   } catch (error) {
     // Never break the upload because the AI step failed
     console.error('Ingredient extraction failed:', error);
