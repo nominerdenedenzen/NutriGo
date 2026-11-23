@@ -14,7 +14,7 @@ import TodayBadge from "./TodayBadge";
 
 export default function MealPlanPage() {
   return (
-    <main className="flex-1 bg-[#ECECE6]">
+    <main className="flex-1">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
         <Suspense fallback={<PlanSkeleton />}>
           <MealPlan />
@@ -65,11 +65,11 @@ async function MealPlan() {
       {/* Page header */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-script text-2xl text-[#6b8f5e]">This week</p>
-          <h1 className="font-display text-4xl font-semibold text-[#1e3226] sm:text-5xl">
+          <p className="text-sm font-semibold text-[#1F8A4C]">This week</p>
+          <h1 className="text-4xl font-semibold tracking-tight text-[#101814] sm:text-5xl">
             Your meal plan
           </h1>
-          <p className="mt-1 text-sm text-[#1e3226]/60">
+          <p className="mt-1 text-sm text-[#101814]/60">
             {meals.length === 0
               ? "No meals planned yet."
               : `${meals.length} meal${meals.length > 1 ? "s" : ""} planned · ${toBuyCount} item${toBuyCount === 1 ? "" : "s"} to buy`}
@@ -79,7 +79,7 @@ async function MealPlan() {
           {meals.length > 0 && <ClearWeekButton />}
           <Link
             href="/scan"
-            className="flex items-center gap-2 rounded-full bg-[#1e3226] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#2c4636]"
+            className="flex items-center gap-2 rounded-full bg-[#1F8A4C] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#176F3C]"
           >
             <Camera className="h-4 w-4" />
             Find more recipes
@@ -95,14 +95,14 @@ async function MealPlan() {
             return (
               <div
                 key={day}
-                className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#1e3226]/5 sm:p-5"
+                className="rounded-2xl bg-white p-4 border border-black/5 shadow-sm sm:p-5"
               >
                 <div className="flex items-center justify-between">
-                  <h2 className="flex items-center gap-2 font-display text-2xl font-semibold capitalize text-[#1e3226]">
+                  <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight capitalize text-[#101814]">
                     {day}
                     <TodayBadge day={day} />
                   </h2>
-                  <span className="text-xs text-[#1e3226]/50">
+                  <span className="text-xs text-[#101814]/50">
                     {dayMeals.length === 0 ? "" : `${dayMeals.length} meal${dayMeals.length > 1 ? "s" : ""}`}
                   </span>
                 </div>
@@ -110,7 +110,7 @@ async function MealPlan() {
                 {dayMeals.length === 0 ? (
                   <Link
                     href="/scan"
-                    className="mt-3 flex items-center gap-2 rounded-2xl border-2 border-dashed border-[#1e3226]/10 px-4 py-3 text-sm text-[#1e3226]/50 transition hover:border-[#6b8f5e]/40 hover:text-[#1e3226]"
+                    className="mt-3 flex items-center gap-2 rounded-xl border-2 border-dashed border-[#101814]/10 px-4 py-3 text-sm text-[#101814]/50 transition hover:border-[#1F8A4C]/40 hover:text-[#101814]"
                   >
                     <Plus className="h-4 w-4" />
                     Nothing planned. Scan your fridge to find a meal.
@@ -120,7 +120,7 @@ async function MealPlan() {
                     {dayMeals.map((meal) => (
                       <li
                         key={meal.id}
-                        className="group relative flex items-center gap-3 rounded-2xl bg-[#ECECE6]/60 p-2 pr-10 transition hover:bg-[#ECECE6]"
+                        className="group relative flex items-center gap-3 rounded-xl bg-[#FAFAF8]/60 p-2 pr-10 transition hover:bg-[#FAFAF8]"
                       >
                         <Link href={`/recipes/${meal.recipeId}`} className="flex min-w-0 flex-1 items-center gap-3">
                           {meal.imageUrl ? (
@@ -131,13 +131,13 @@ async function MealPlan() {
                               className="h-16 w-16 shrink-0 rounded-xl object-cover"
                             />
                           ) : (
-                            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#cfe3c4]">
-                              <ChefHat className="h-6 w-6 text-[#1e3226]/40" />
+                            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#E6F4EA]">
+                              <ChefHat className="h-6 w-6 text-[#101814]/40" />
                             </span>
                           )}
                           <span className="min-w-0">
-                            <span className="block truncate font-medium text-[#1e3226]">{meal.title}</span>
-                            <span className="mt-0.5 flex items-center gap-1 text-xs text-[#1e3226]/60">
+                            <span className="block truncate font-medium text-[#101814]">{meal.title}</span>
+                            <span className="mt-0.5 flex items-center gap-1 text-xs text-[#101814]/60">
                               <Clock className="h-3 w-3" />
                               {meal.cookingTime ?? "—"}
                             </span>
@@ -149,7 +149,7 @@ async function MealPlan() {
                           <button
                             type="submit"
                             aria-label={`Remove ${meal.title} from ${day}`}
-                            className="rounded-full p-1.5 text-[#1e3226]/40 transition hover:bg-white hover:text-red-600"
+                            className="rounded-full p-1.5 text-[#101814]/40 transition hover:bg-white hover:text-red-600"
                           >
                             <X className="h-4 w-4" />
                           </button>
@@ -164,7 +164,7 @@ async function MealPlan() {
         </section>
 
         {/* ===== Grocery list ===== */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside id="grocery-list" className="scroll-mt-24 lg:sticky lg:top-24 lg:self-start">
           <GroceryList initialItems={grocery} />
         </aside>
       </div>
@@ -179,10 +179,10 @@ function PlanSkeleton() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-3xl bg-white" />
+            <div key={i} className="h-28 rounded-2xl bg-white" />
           ))}
         </div>
-        <div className="h-96 rounded-3xl bg-white" />
+        <div className="h-96 rounded-2xl bg-white" />
       </div>
     </div>
   );

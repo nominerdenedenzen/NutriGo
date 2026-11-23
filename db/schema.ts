@@ -77,3 +77,22 @@ export const nutritionCache = pgTable("nutrition_cache", {
   fat: real("fat"),
   carbs: real("carbs"),
 });
+
+// Not used yet: saved for the Wire.mn Pro plan later (the tables already exist in Supabase).
+// One row per Pro payment (Wire.mn). Only the Wire webhook may set status to "paid".
+export const orders = pgTable("orders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(), // Clerk user ID
+  paymentIntentId: text("payment_intent_id").unique(), // Wire's "pi_..." id
+  amount: integer("amount").notNull(), // in tugrik (MNT)
+  status: text("status").$type<"pending" | "paid" | "failed">().default("pending").notNull(),
+  proUntil: timestamp("pro_until"), // set when paid: Pro ends at this time
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// One row each time a user asks Gemini for recipes (to count free daily uses).
+export const aiRequests = pgTable("ai_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});

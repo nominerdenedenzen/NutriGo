@@ -19,11 +19,11 @@ export default function CookingSteps({ steps }: { steps: string[] }) {
   const allDone = steps.length > 0 && done.size === steps.length;
 
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#1e3226]/5">
+    <div className="rounded-2xl bg-white p-6 border border-black/5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-2xl font-semibold text-[#1e3226]">How to cook it</h2>
+        <h2 className="text-xl font-semibold tracking-tight text-[#101814]">How to cook it</h2>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#1e3226]/60">
+          <span className="text-xs text-[#101814]/60">
             {done.size} of {steps.length} done
           </span>
           {done.size > 0 && (
@@ -31,14 +31,14 @@ export default function CookingSteps({ steps }: { steps: string[] }) {
               type="button"
               onClick={() => setDone(new Set())}
               aria-label="Reset steps"
-              className="rounded-full p-1.5 text-[#1e3226]/50 transition hover:bg-[#ECECE6] hover:text-[#1e3226]"
+              className="rounded-full p-1.5 text-[#101814]/50 transition hover:bg-[#FAFAF8] hover:text-[#101814]"
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
       </div>
-      <p className="mt-1 text-sm text-[#1e3226]/60">Tap a step when you finish it.</p>
+      <p className="mt-1 text-sm text-[#101814]/60">Tap a step when you finish it.</p>
 
       <ol className="mt-5 space-y-3">
         {steps.map((step, i) => {
@@ -49,20 +49,20 @@ export default function CookingSteps({ steps }: { steps: string[] }) {
                 type="button"
                 onClick={() => toggle(i)}
                 aria-pressed={isDone}
-                className={`flex w-full gap-4 rounded-2xl p-3 text-left transition ${
-                  isDone ? "bg-[#cfe3c4]/30" : "hover:bg-[#ECECE6]/60"
+                className={`flex w-full gap-4 rounded-xl p-3 text-left transition ${
+                  isDone ? "bg-[#E6F4EA]/30" : "hover:bg-[#FAFAF8]/60"
                 }`}
               >
                 <span
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition ${
-                    isDone ? "bg-[#6b8f5e] text-white" : "bg-[#1e3226] text-white"
+                    isDone ? "bg-[#1F8A4C] text-white" : "bg-[#101814] text-white"
                   }`}
                 >
                   {isDone ? <Check className="h-4 w-4" strokeWidth={3} /> : i + 1}
                 </span>
                 <span
                   className={`pt-1 leading-relaxed transition ${
-                    isDone ? "text-[#1e3226]/40 line-through" : "text-[#1e3226]/80"
+                    isDone ? "text-[#101814]/40 line-through" : "text-[#101814]/80"
                   }`}
                 >
                   {step}
@@ -74,7 +74,7 @@ export default function CookingSteps({ steps }: { steps: string[] }) {
       </ol>
 
       {allDone && (
-        <p className="mt-5 rounded-2xl bg-[#1e3226] p-4 text-center font-display text-xl text-[#cfe3c4]">
+        <p className="mt-5 rounded-xl bg-[#101814] p-4 text-center font-display text-xl text-[#E6F4EA]">
           All done. Enjoy your meal! 🍽️
         </p>
       )}

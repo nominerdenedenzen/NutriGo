@@ -1,81 +1,46 @@
-'use client';
+import Link from "next/link";
+import { ArrowDown, Camera } from "lucide-react";
 
-import { useRef } from 'react';
-import { Play, Camera } from 'lucide-react';
+const HERO_PHOTO =
+  "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=2000&q=80";
 
-interface HeroProps {
-  onPhotoCapture?: (file: File) => void;
-}
-
-export default function Hero({ onPhotoCapture }: HeroProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onPhotoCapture?.(file);
-    }
-  };
-
+// Full-width food photo with the headline on top
+export default function Hero() {
   return (
-    <section className="bg-[#ECECE6] text-[#1A1C18] font-sans selection:bg-[#23291F] selection:text-[#ECECE6]">
-      <main className="max-w-[1380px] mx-auto px-6 pt-10 pb-6">
-        <div className="relative grid grid-cols-1 lg:grid-cols-12 items-center gap-8 py-4">
-          <div className="hidden lg:flex lg:col-span-3 flex-col items-end gap-6 pr-4">
-            {/* Leaf Pill Image */}
-            <div className="w-48 h-28 rounded-full overflow-hidden shadow-sm border border-black/5">
-              <img
-                src="https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=600&q=80"
-                alt="Fresh green botanical leaf with dew"
-                className="w-full h-full object-cover"
-              />
-            </div>
+    <section className="relative isolate flex min-h-[560px] lg:min-h-[640px] items-center justify-center overflow-hidden px-6 py-24 text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={HERO_PHOTO} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+      {/* Dark green overlay so the white text is easy to read */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#0B2A1A]/75 via-[#0B2A1A]/60 to-[#0B2A1A]/85" aria-hidden />
 
-            {/* Play Video Trigger */}
-            <div className="flex items-center gap-3 self-center">
-              <button
-                aria-label="Play brand story video"
-                className="w-12 h-12 rounded-full bg-[#1F241D] text-[#ECECE6] flex items-center justify-center hover:scale-105 transition shadow-md"
-              >
-                <Play className="w-4 h-4 fill-current ml-0.5" />
-              </button>
-              <span className="text-[10px] font-semibold uppercase tracking-wider leading-tight text-[#3E433B] max-w-[85px]">
-                A stronger you starts here
-              </span>
-            </div>
-          </div>
+      <div className="max-w-3xl">
+        <span className="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur">
+          Fresh · Healthy · Simple
+        </span>
+        <h1 className="mt-6 text-5xl font-extrabold leading-[1.02] tracking-tight text-white sm:text-7xl">
+          Cook better with what you <span className="text-[#7BE0A0]">already have</span>
+        </h1>
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/80">
+          Snap your fridge. Get healthy recipes, a weekly plan and a grocery list in seconds.
+        </p>
 
-          {/* Center Headline & CTA */}
-          <div className="lg:col-span-6 text-center flex flex-col items-center">
-            <h1 className="font-display text-5xl sm:text-6xl xl:text-[68px] font-normal tracking-tight leading-[1.03] text-[#1A1C18] uppercase">
-              Daily Nutrition
-              <br />
-              For A <span className="text-[#4A6B3E]">Healthier</span>
-              <br />
-              Brighter You
-            </h1>
-
-            {/* Hidden Camera / Image Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="mt-7 inline-flex items-center gap-3 bg-[#1F241D] text-[#ECECE6] px-7 py-3.5 rounded-full text-xs font-medium tracking-widest uppercase hover:bg-[#2F362C] transition shadow-sm group cursor-pointer"
-            >
-              <Camera className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              <span>Scan Ingredients</span>
-            </button>
-          </div>
+        <div className="mt-9 flex flex-wrap justify-center gap-3">
+          <Link
+            href="/scan"
+            className="inline-flex items-center gap-2 rounded-full bg-[#1F8A4C] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[#25A35A]"
+          >
+            <Camera className="h-4 w-4" />
+            Scan your fridge
+          </Link>
+          <Link
+            href="#how-it-works"
+            className="inline-flex items-center gap-2 rounded-full border border-white/40 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
+          >
+            How it works
+            <ArrowDown className="h-4 w-4" />
+          </Link>
         </div>
-      </main>
+      </div>
     </section>
   );
 }

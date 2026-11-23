@@ -1,24 +1,15 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Caveat, Cormorant_Garamond, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "./_component/Header";
+import Footer from "./_component/Footer";
 import "./globals.css";
 
+// Clean, modern sans-serif for everything
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   subsets: ["latin"],
-});
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
-
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-  weight: ["600"],
 });
 
 const geistMono = Geist_Mono({
@@ -33,14 +24,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: { colorPrimary: "#1F8A4C", fontFamily: "var(--font-jakarta)", borderRadius: "0.75rem" },
+      }}
+    >
       <html
         lang="en"
-        className={`${jakarta.variable} ${cormorant.variable} ${caveat.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col bg-[#ECECE6]">
-          <Header />
+        <body className="min-h-full flex flex-col bg-[#FAFAF8] text-[#101814]">
+          {/* Header reads the current URL, so it streams in (keeps the same height meanwhile) */}
+          <Suspense fallback={<div className="h-16 border-b border-black/5" />}>
+            <Header />
+          </Suspense>
           {children}
+          <Footer />
         </body>
       </html>
     </ClerkProvider>

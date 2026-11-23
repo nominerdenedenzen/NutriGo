@@ -11,7 +11,7 @@ export default function BackButton() {
     <button
       type="button"
       onClick={() => (window.history.length > 1 ? router.back() : router.push("/scan"))}
-      className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-[#1e3226]/70 transition hover:bg-[#1e3226]/5 hover:text-[#1e3226]"
+      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#101814]/70 transition hover:bg-[#101814]/5 hover:text-[#101814]"
     >
       <ArrowLeft className="h-4 w-4" />
       Back to recipes

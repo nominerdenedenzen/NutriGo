@@ -17,7 +17,7 @@ export default function ClearWeekButton() {
       type="button"
       onClick={clear}
       disabled={pending}
-      className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-[#1e3226]/70 shadow-sm ring-1 ring-[#1e3226]/5 transition hover:text-red-600 disabled:opacity-60"
+      className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-[#101814]/70 border border-black/5 shadow-sm transition hover:text-red-600 disabled:opacity-60"
     >
       <Trash2 className="h-4 w-4" />
       {pending ? "Clearing…" : "Clear week"}

@@ -80,27 +80,27 @@ export default function PlanAndShop({
   const haveCount = ingredients.length - toBuy.length;
 
   return (
-    <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#1e3226]/5">
+    <div className="overflow-hidden rounded-2xl bg-white border border-black/5 shadow-sm">
       {/* ===== Step 1: ingredient checklist ===== */}
       <div className="p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#6b8f5e]">Step 1</p>
-            <h2 className="flex items-center gap-2 font-display text-2xl font-semibold text-[#1e3226]">
-              <ListChecks className="h-5 w-5 text-[#6b8f5e]" />
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#1F8A4C]">Step 1</p>
+            <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#101814]">
+              <ListChecks className="h-5 w-5 text-[#1F8A4C]" />
               What do you have?
             </h2>
-            <p className="mt-1 text-sm text-[#1e3226]/60">Tick what&apos;s in your kitchen. The rest goes on your grocery list.</p>
+            <p className="mt-1 text-sm text-[#101814]/60">Tick what&apos;s in your kitchen. The rest goes on your grocery list.</p>
           </div>
-          <span className="shrink-0 rounded-full bg-[#cfe3c4]/60 px-3 py-1 text-xs font-semibold text-[#1e3226]">
+          <span className="shrink-0 rounded-xl bg-[#E6F4EA]/60 px-3 py-1 text-xs font-semibold text-[#101814]">
             {haveCount}/{ingredients.length}
           </span>
         </div>
 
         {/* progress bar */}
-        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#ECECE6]">
+        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#FAFAF8]">
           <div
-            className="h-full rounded-full bg-[#6b8f5e] transition-all"
+            className="h-full rounded-full bg-[#1F8A4C] transition-all"
             style={{ width: `${ingredients.length ? (haveCount / ingredients.length) * 100 : 0}%` }}
           />
         </div>
@@ -113,9 +113,9 @@ export default function PlanAndShop({
             return (
               <li key={key}>
                 <label
-                  className={`flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 ring-1 transition ${
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 ring-1 transition ${
                     isHave
-                      ? "bg-[#cfe3c4]/30 ring-[#6b8f5e]/20 hover:bg-[#cfe3c4]/50"
+                      ? "bg-[#E6F4EA]/30 ring-[#1F8A4C]/20 hover:bg-[#E6F4EA]/50"
                       : "bg-amber-50/60 ring-amber-200 hover:bg-amber-50"
                   }`}
                 >
@@ -128,22 +128,22 @@ export default function PlanAndShop({
                   {/* custom checkbox */}
                   <span
                     aria-hidden
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition peer-focus-visible:ring-2 peer-focus-visible:ring-[#6b8f5e] ${
-                      isHave ? "border-[#1e3226] bg-[#1e3226]" : "border-amber-400 bg-white"
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-xl border-2 transition peer-focus-visible:ring-2 peer-focus-visible:ring-[#1F8A4C] ${
+                      isHave ? "border-[#101814] bg-[#101814]" : "border-amber-400 bg-white"
                     }`}
                   >
                     {isHave && <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />}
                   </span>
-                  <span className="flex-1 text-sm capitalize text-[#1e3226]">
+                  <span className="flex-1 text-sm capitalize text-[#101814]">
                     {name}
-                    {measure && <span className="ml-1 text-[#1e3226]/50">· {measure}</span>}
+                    {measure && <span className="ml-1 text-[#101814]/50">· {measure}</span>}
                   </span>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                    className={`rounded-xl px-2 py-0.5 text-[11px] font-semibold ${
                       isHave
-                        ? "text-[#1e3226]/50"
+                        ? "text-[#101814]/50"
                         : onList
-                          ? "bg-[#1e3226]/5 text-[#1e3226]/60"
+                          ? "bg-[#101814]/5 text-[#101814]/60"
                           : "bg-amber-100 text-amber-800"
                     }`}
                   >
@@ -157,10 +157,10 @@ export default function PlanAndShop({
       </div>
 
       {/* ===== Step 2: pick a day ===== */}
-      <div className="border-t border-[#1e3226]/5 bg-[#ECECE6]/40 p-6">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#6b8f5e]">Step 2</p>
-        <h2 className="flex items-center gap-2 font-display text-2xl font-semibold text-[#1e3226]">
-          <CalendarPlus className="h-5 w-5 text-[#6b8f5e]" />
+      <div className="border-t border-[#101814]/5 bg-[#FAFAF8]/40 p-6">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#1F8A4C]">Step 2</p>
+        <h2 className="flex items-center gap-2 text-xl font-semibold tracking-tight text-[#101814]">
+          <CalendarPlus className="h-5 w-5 text-[#1F8A4C]" />
           When will you cook it?
         </h2>
 
@@ -171,27 +171,27 @@ export default function PlanAndShop({
               type="button"
               onClick={() => setPicked(d)}
               aria-pressed={day === d}
-              className={`relative flex flex-col items-center rounded-2xl py-2 transition ${
+              className={`relative flex flex-col items-center rounded-xl py-2 transition ${
                 day === d
-                  ? "bg-[#1e3226] text-white shadow"
-                  : "bg-white text-[#1e3226]/70 ring-1 ring-[#1e3226]/5 hover:bg-[#1e3226]/5"
+                  ? "bg-[#101814] text-white shadow"
+                  : "bg-white text-[#101814]/70 ring-1 ring-[#101814]/5 hover:bg-[#101814]/5"
               }`}
             >
               <span className="text-[11px] font-semibold uppercase">{d.slice(0, 3)}</span>
               <span className="text-base font-semibold">{dates ? dates[d] : " "}</span>
               {today === d && (
-                <span className={`text-[9px] font-semibold uppercase ${day === d ? "text-[#cfe3c4]" : "text-[#6b8f5e]"}`}>
+                <span className={`text-[9px] font-semibold uppercase ${day === d ? "text-[#E6F4EA]" : "text-[#1F8A4C]"}`}>
                   today
                 </span>
               )}
               {plannedDays.includes(d) && (
-                <span title="Already planned this day" className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#6b8f5e]" />
+                <span title="Already planned this day" className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#1F8A4C]" />
               )}
             </button>
           ))}
         </div>
         {plannedDays.length > 0 && (
-          <p className="mt-2 text-xs text-[#1e3226]/50">● Already on your plan for: {plannedDays.map((d) => d.slice(0, 3)).join(", ")}</p>
+          <p className="mt-2 text-xs text-[#101814]/50">● Already on your plan for: {plannedDays.map((d) => d.slice(0, 3)).join(", ")}</p>
         )}
 
         {/* ===== Buttons ===== */}
@@ -199,7 +199,7 @@ export default function PlanAndShop({
           type="button"
           onClick={planAndShop}
           disabled={pending}
-          className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#1e3226] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2c4636] disabled:opacity-60"
+          className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#101814] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#25332B] disabled:opacity-60"
         >
           <CalendarPlus className="h-4 w-4 shrink-0" />
           {pending ? (
@@ -217,7 +217,7 @@ export default function PlanAndShop({
             type="button"
             onClick={shopOnly}
             disabled={pending}
-            className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-medium text-[#1e3226] ring-1 ring-[#1e3226]/15 transition hover:bg-[#1e3226]/5 disabled:opacity-60"
+            className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-medium text-[#101814] ring-1 ring-[#101814]/15 transition hover:bg-[#101814]/5 disabled:opacity-60"
           >
             <ShoppingCart className="h-4 w-4" />
             Only add {newToBuy.length} item{newToBuy.length > 1 ? "s" : ""} to grocery list
@@ -226,8 +226,8 @@ export default function PlanAndShop({
 
         {/* ===== Result ===== */}
         {done && !pending && (
-          <div className="mt-4 flex items-start gap-3 rounded-2xl bg-[#cfe3c4]/50 p-4 text-sm text-[#1e3226]">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1e3226]">
+          <div className="mt-4 flex items-start gap-3 rounded-xl bg-[#E6F4EA]/50 p-4 text-sm text-[#101814]">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#101814]">
               <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
             </span>
             <div>
@@ -240,7 +240,7 @@ export default function PlanAndShop({
                   "Saved to your grocery list"
                 )}
               </p>
-              <p className="text-[#1e3226]/70">
+              <p className="text-[#101814]/70">
                 {done.items > 0
                   ? `${done.items} item${done.items > 1 ? "s" : ""} added to your grocery list.`
                   : "Nothing new to buy."}{" "}

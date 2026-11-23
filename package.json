@@ -16,6 +16,7 @@
     "@google/genai": "^3.6.1",
     "@huggingface/inference": "^4.13.33",
     "@huggingface/transformers": "^4.3.2",
+    "@pinecone-database/pinecone": "^9.2.0",
     "@supabase/supabase-js": "^2.119.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",

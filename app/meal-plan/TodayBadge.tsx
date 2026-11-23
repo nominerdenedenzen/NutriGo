@@ -13,7 +13,7 @@ export default function TodayBadge({ day }: { day: WeekDay }) {
   if (today !== day) return null;
 
   return (
-    <span className="rounded-full bg-[#cfe3c4] px-2 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-[#1e3226]">
+    <span className="rounded-xl bg-[#E6F4EA] px-2 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-[#101814]">
       Today
     </span>
   );

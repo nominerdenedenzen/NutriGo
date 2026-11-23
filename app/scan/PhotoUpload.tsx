@@ -57,12 +57,12 @@ export default function PhotoUpload() {
 
   return (
     <div className="flex w-full max-w-md flex-col gap-4">
-      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-neutral-400 bg-white/60 p-6 text-center hover:bg-white">
+      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-[#101814]/15 bg-white p-10 text-center transition hover:border-[#1F8A4C] hover:bg-white">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="Your photo" className="max-h-72 rounded-xl object-contain" />
         ) : (
-          <span className="text-neutral-600">Tap to take or choose a photo of your ingredients</span>
+          <span className="text-base font-medium text-[#101814]/60">Tap to take or choose a photo of your ingredients</span>
         )}
         <input
           type="file"
@@ -73,7 +73,7 @@ export default function PhotoUpload() {
         />
       </label>
 
-      <Button onClick={onUpload} disabled={!file || status === "uploading"}>
+      <Button className="h-11 text-sm font-medium" onClick={onUpload} disabled={!file || status === "uploading"}>
         {status === "uploading" ? "Uploading…" : "Upload photo"}
       </Button>
 

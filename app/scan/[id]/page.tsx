@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 import RecipeButton from "./RecipeButton";
 
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Auth gates the whole page, so there is no static shell worth streaming first.
+export const instant = false;
+
+const UUID =/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function ScanResultPage({
   params,
@@ -43,7 +46,7 @@ export default async function ScanResultPage({
 
   // The uploaded photo, shown at the top of the left column
   const photo = (
-    <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#1e3226]/5">
+    <div className="overflow-hidden rounded-2xl bg-white border border-black/5 shadow-sm">
       {signed?.signedUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -52,11 +55,11 @@ export default async function ScanResultPage({
           className="aspect-[4/3] w-full object-cover"
         />
       ) : (
-        <div className="flex aspect-[4/3] items-center justify-center bg-[#ECECE6] p-6 text-center text-sm text-red-600">
+        <div className="flex aspect-[4/3] items-center justify-center bg-[#FAFAF8] p-6 text-center text-sm text-red-600">
           Could not load the photo. Try refreshing the page.
         </div>
       )}
-      <div className="flex items-center gap-2 px-5 py-3 text-xs text-[#1e3226]/60">
+      <div className="flex items-center gap-2 px-5 py-3 text-xs text-[#101814]/60">
         <Camera className="h-3.5 w-3.5" />
         Scanned {uploadedAt}
       </div>
@@ -64,13 +67,13 @@ export default async function ScanResultPage({
   );
 
   return (
-    <main className="flex-1 bg-[#ECECE6]">
+    <main className="flex-1">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
         {/* Page header */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-script text-2xl text-[#6b8f5e]">Your scan</p>
-            <h1 className="font-display text-4xl font-semibold text-[#1e3226] sm:text-5xl">
+            <p className="text-sm font-semibold text-[#1F8A4C]">Your scan</p>
+            <h1 className="text-4xl font-semibold tracking-tight text-[#101814] sm:text-5xl">
               What&apos;s cooking today?
             </h1>
           </div>
@@ -78,7 +81,7 @@ export default async function ScanResultPage({
             render={<Link href="/scan" />}
             nativeButton={false}
             variant="outline"
-            className="rounded-full border-[#1e3226]/20 bg-white text-[#1e3226] hover:bg-[#1e3226]/5"
+            className="rounded-full border-[#101814]/20 bg-white text-[#101814] hover:bg-[#101814]/5"
           >
             <Camera className="h-4 w-4" />
             Scan another photo
