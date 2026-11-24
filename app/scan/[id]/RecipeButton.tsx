@@ -24,10 +24,12 @@ export default function RecipeButton({
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   async function findRecipes() {
     setLoading(true);
     setError("");
+    setShowUpgrade(false);
     try {
       const res = await fetch("/api/gemini", {
         method: "POST",
@@ -35,7 +37,10 @@ export default function RecipeButton({
         body: JSON.stringify({ ingredients }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Something went wrong");
+      if (!res.ok) {
+        setShowUpgrade(data.upgrade === true);
+        throw new Error(data.error ?? "Something went wrong");
+      }
       setRecipes(data.recipes);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -53,6 +58,14 @@ export default function RecipeButton({
       </Button>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {showUpgrade && (
+        <Link
+          href="/premium"
+          className="flex h-12 w-full items-center justify-center rounded-full border border-[#1F8A4C] text-sm font-semibold text-[#1F8A4C] hover:bg-[#E6F4EA]"
+        >
+          Get Premium
+        </Link>
+      )}
 
       {recipes.length > 0 && (
         <div className="space-y-4">

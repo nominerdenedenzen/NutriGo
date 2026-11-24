@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { recipes as recipesTable } from '@/db/schema';
 import { addRecipesToPinecone } from '@/lib/pinecone';
 import { findRecipeImage } from '@/lib/recipeImage';
+import { FREE_AI_REQUESTS_PER_DAY, aiRequestsToday, isPremium, recordAiRequest } from '@/lib/premium';
 
 
 function toStringList(value: unknown): string[] {
@@ -26,6 +27,18 @@ export async function POST(request: Request) {
   const { userId } = await auth();
   if (!userId) {
     return Response.json({ error: 'Please sign in first.' }, { status: 401 });
+  }
+
+  // 1b. Free accounts get a few AI searches a day; Premium is unlimited
+  const premium = await isPremium(userId);
+  if (!premium && (await aiRequestsToday(userId)) >= FREE_AI_REQUESTS_PER_DAY) {
+    return Response.json(
+      {
+        error: `You've used your ${FREE_AI_REQUESTS_PER_DAY} free AI searches for today. Get Premium for unlimited recipes.`,
+        upgrade: true,
+      },
+      { status: 402 },
+    );
   }
 
   // 2. Get the ingredients sent to this route
@@ -108,7 +121,10 @@ Answer with only a JSON array. Each recipe must have exactly these fields:
       console.error('Saving to Pinecone failed:', pineconeError);
     }
 
-    // 7. Send the recipes back
+    // 7. Count this search towards the free daily limit
+    if (!premium) await recordAiRequest(userId);
+
+    // 8. Send the recipes back
     return Response.json({ recipes });
   } catch (error) {
     console.error('Gemini failed:', error);

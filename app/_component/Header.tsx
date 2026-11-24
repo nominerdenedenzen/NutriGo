@@ -16,6 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Recipes", href: "/recipes" },
   { label: "Meal Plans", href: "/meal-plan" },
   { label: "Nutrition", href: "/nutrition" },
+  { label: "Premium", href: "/premium" },
 ];
 
 export default function Header() {

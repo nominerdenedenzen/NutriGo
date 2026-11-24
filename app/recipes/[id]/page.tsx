@@ -5,9 +5,11 @@ import { auth } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { CalendarDays, ChefHat, Clock, Flame, Gauge, Lightbulb, ShoppingCart, Users } from "lucide-react";
 import { db } from "@/db";
-import { groceryItems, mealPlan, recipes } from "@/db/schema";
+import { favourites, groceryItems, mealPlan, recipes } from "@/db/schema";
 import type { WeekDay } from "@/lib/weekDays";
 import { ensureRecipeImages } from "@/lib/recipeImage";
+import { findMissing, getPantry } from "@/lib/pantry";
+import FavouriteButton from "../FavouriteButton";
 import BackButton from "./BackButton";
 import CookingSteps from "./CookingSteps";
 import PlanAndShop from "./PlanAndShop";
@@ -37,7 +39,7 @@ async function RecipeDetail({ params }: { params: Promise<{ id: string }> }) {
   // Older recipes have no photo yet: look it up once and save it
   const [recipe] = await ensureRecipeImages([found]);
 
-  const [planned, onList] = await Promise.all([
+  const [planned, onList, fav, pantry] = await Promise.all([
     // Which days is this recipe already on?
     db
       .select({ day: mealPlan.day })
@@ -48,11 +50,18 @@ async function RecipeDetail({ params }: { params: Promise<{ id: string }> }) {
       .select({ name: groceryItems.name })
       .from(groceryItems)
       .where(and(eq(groceryItems.userId, userId), eq(groceryItems.checked, false))),
+    // Did the user save it to their favourites?
+    db.query.favourites.findFirst({ where: and(eq(favourites.userId, userId), eq(favourites.recipeId, id)) }),
+    // What was in their fridge at the last scan?
+    getPantry(userId),
   ]);
   const plannedDays = [...new Set(planned.map((p) => p.day as WeekDay))];
 
   const ingredients = recipe.ingredients ?? [];
-  const missing = (recipe.missingIngredients ?? []).map((m) => m.toLowerCase());
+  // What the user still needs: compared with their last fridge scan (null = unknown, they never scanned)
+  const missing = pantry
+    ? findMissing(ingredients.map((i) => i.name), pantry.items)
+    : (recipe.missingIngredients?.map((m) => m.toLowerCase()) ?? null);
   const steps = (recipe.instructions ?? "").split("\n").filter((s) => s.trim() !== "");
   const tips = recipe.tips ?? [];
   const nutrition = recipe.nutrition;
@@ -69,13 +78,16 @@ async function RecipeDetail({ params }: { params: Promise<{ id: string }> }) {
       {/* Top bar */}
       <div className="mb-6 flex items-center justify-between gap-4">
         <BackButton />
-        <Link
-          href="/meal-plan"
-          className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-[#101814] border border-black/5 shadow-sm transition hover:bg-[#101814]/5"
-        >
-          <CalendarDays className="h-4 w-4" />
-          My meal plan
-        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <FavouriteButton recipeId={recipe.id} initial={Boolean(fav)} variant="pill" />
+          <Link
+            href="/meal-plan"
+            className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-[#101814] border border-black/5 shadow-sm transition hover:bg-[#101814]/5"
+          >
+            <CalendarDays className="h-4 w-4" />
+            My meal plan
+          </Link>
+        </div>
       </div>
 
       {/* ===== Hero: big photo with the title on top ===== */}
@@ -95,20 +107,22 @@ async function RecipeDetail({ params }: { params: Promise<{ id: string }> }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#101814] via-[#101814]/50 to-transparent" />
 
         <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-semibold ${
-              missing.length === 0 ? "bg-[#E6F4EA] text-[#101814]" : "bg-amber-100 text-amber-900"
-            }`}
-          >
-            {missing.length === 0 ? (
-              "✓ You can cook this now"
-            ) : (
-              <>
-                <ShoppingCart className="h-3.5 w-3.5" />
-                Missing {missing.length} ingredient{missing.length > 1 ? "s" : ""}
-              </>
-            )}
-          </span>
+          {missing && (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1 text-xs font-semibold ${
+                missing.length === 0 ? "bg-[#E6F4EA] text-[#101814]" : "bg-amber-100 text-amber-900"
+              }`}
+            >
+              {missing.length === 0 ? (
+                "✓ You can cook this now"
+              ) : (
+                <>
+                  <ShoppingCart className="h-3.5 w-3.5" />
+                  Missing {missing.length} ingredient{missing.length > 1 ? "s" : ""}
+                </>
+              )}
+            </span>
+          )}
           <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight leading-tight text-white sm:text-6xl">
             {recipe.title}
           </h1>
