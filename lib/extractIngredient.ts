@@ -1,11 +1,11 @@
 // Reads ingredients from a food photo using Google Gemini (it can understand images).
 // Needs GEMINI_API_KEY in .env.local (free key from https://aistudio.google.com/apikey).
-import { GoogleGenAI, createPartFromBase64 } from '@google/genai';
+import { createPartFromBase64 } from '@google/genai';
+import { gemini } from '@/lib/gemini';
 
 const MODEL_ID = 'gemini-3.5-flash-lite';
 const MAX_ITEMS = 20;
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const PROMPT =
   'Name every individual food item you can see in this image. Be specific: give the exact name of each one ' +
@@ -29,7 +29,7 @@ export async function extractIngredientsFromImage(imageUrlOrBase64: string): Pro
   try {
     const { mimeType, data } = await toBase64(imageUrlOrBase64);
 
-    const response = await ai.models.generateContent({
+    const response = await gemini().models.generateContent({
       model: MODEL_ID,
       contents: [createPartFromBase64(data, mimeType), PROMPT],
       config: { responseMimeType: 'application/json', temperature: 0 },

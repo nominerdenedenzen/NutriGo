@@ -1,11 +1,10 @@
-import { GoogleGenAI } from '@google/genai';
+import { gemini } from '@/lib/gemini';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { recipes as recipesTable } from '@/db/schema';
 import { addRecipesToPinecone } from '@/lib/pinecone';
 import { findRecipeImage } from '@/lib/recipeImage';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 function toStringList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -38,7 +37,7 @@ export async function POST(request: Request) {
 
   try {
     // 3. Ask Gemini for recipes as JSON
-    const response = await ai.models.generateContent({
+    const response = await gemini().models.generateContent({
       model: 'gemini-3.5-flash-lite',
       contents: `I have these ingredients: ${ingredients.join(', ')}.
 Suggest 3 simple recipes.

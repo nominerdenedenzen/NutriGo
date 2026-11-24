@@ -29,7 +29,7 @@ export default async function ScanResultPage({
   });
   if (!scan) notFound();
 
-  const { data: signed } = await supabase.storage
+  const { data: signed } = await supabase().storage
     .from(PHOTO_BUCKET)
     .createSignedUrl(scan.photoPath, 60 * 60);
 

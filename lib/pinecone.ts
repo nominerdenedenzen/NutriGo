@@ -2,7 +2,7 @@
 // Needs PINECONE_API_KEY and GEMINI_API_KEY in .env, and a Pinecone index called "recipes" (dimension 384, cosine).
 import "server-only";
 import { Pinecone } from "@pinecone-database/pinecone";
-import { GoogleGenAI } from "@google/genai";
+import { gemini } from "@/lib/gemini";
 
 // Gemini's embedding model turns text into a list of numbers (a "vector").
 // Texts with a similar meaning get similar numbers. We ask for 384 numbers to match the Pinecone index.
@@ -10,10 +10,17 @@ import { GoogleGenAI } from "@google/genai";
 const MODEL_ID = "gemini-embedding-001";
 const DIMENSIONS = 384;
 
-// Create the clients once (outside the functions)
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
-const index = pc.index("recipes");
+// The Pinecone index, created the first time it is used (not when the file loads),
+// so `next build` doesn't fail when PINECONE_API_KEY isn't set yet.
+let pineconeIndex: ReturnType<Pinecone["index"]> | null = null;
+function index() {
+  if (!pineconeIndex) {
+    const apiKey = process.env.PINECONE_API_KEY;
+    if (!apiKey) throw new Error("Missing PINECONE_API_KEY in the environment variables");
+    pineconeIndex = new Pinecone({ apiKey }).index("recipes");
+  }
+  return pineconeIndex;
+}
 
 // Scale a vector to length 1, so similarity scores are comparable (Google asks for this below 3072 numbers)
 function normalize(values: number[]) {
@@ -24,7 +31,7 @@ function normalize(values: number[]) {
 // 1. Texts -> vectors (one list of 384 numbers per text).
 //    "document" = a recipe we store, "query" = what the user typed in the search box.
 export async function embedTexts(texts: string[], kind: "document" | "query"): Promise<number[][]> {
-  const response = await ai.models.embedContent({
+  const response = await gemini().models.embedContent({
     model: MODEL_ID,
     contents: texts,
     config: {
@@ -66,12 +73,12 @@ export async function addRecipesToPinecone(recipes: RecipeForSearch[]) {
     metadata: { source: recipe.source ?? "", createdBy: recipe.createdBy ?? "" },
   }));
 
-  await index.upsert({ records });
+  await index().upsert({ records });
 }
 
 // 3. Find the recipe ids closest in meaning to some text (best match first)
 export async function findSimilarRecipeIds(text: string, userId: string, topK = 10) {
-  const result = await index.query({
+  const result = await index().query({
     vector: (await embedTexts([text], "query"))[0],
     topK,
     // AI recipes are private: only show ones this user created, plus all non-AI recipes

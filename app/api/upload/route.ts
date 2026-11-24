@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   const ext = file.type.split("/")[1];
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
 
-  const { error } = await supabase.storage
+  const { error } = await supabase().storage
     .from(PHOTO_BUCKET)
     .upload(path, file, { contentType: file.type });
 
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     .values({ userId, photoPath: path, ingredients })
     .returning({ id: scans.id, ingredients: scans.ingredients });
 
-  const { data: signed } = await supabase.storage
+  const { data: signed } = await supabase().storage
     .from(PHOTO_BUCKET)
     .createSignedUrl(path, 60 * 60);
 
