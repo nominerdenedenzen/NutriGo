@@ -6,7 +6,7 @@ import Header from "./_component/Header";
 import Footer from "./_component/Footer";
 import "./globals.css";
 
-// Clean, modern sans-serif for everything
+
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   subsets: ["latin"],

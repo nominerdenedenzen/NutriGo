@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TimerIcon } from "lucide-react";
+import { ChefHat, TimerIcon } from "lucide-react";
 
 type Recipe = {
   id: string;
@@ -11,6 +11,7 @@ type Recipe = {
   cookingTime: string;
   ingredients: string[];
   instructions: string[];
+  imageUrl: string; // "" when no photo was found
 };
 
 export default function RecipeButton({
@@ -56,21 +57,31 @@ export default function RecipeButton({
       {recipes.length > 0 && (
         <div className="space-y-4">
           {recipes.map((recipe) => {
-            const { id, name, cookingTime, ingredients, instructions } = recipe;
+            const { id, name, cookingTime, ingredients, instructions, imageUrl } = recipe;
             return (
-              <div key={id} className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-lg font-semibold text-[#101814]">{name}</h3>
-                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#E6F4EA] px-3 py-1 text-xs text-[#101814]">
-                    <TimerIcon className="h-3.5 w-3.5" />
-                    {cookingTime}
-                  </span>
+              <div key={id} className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+                {imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={imageUrl} alt={name} className="h-44 w-full object-cover" />
+                ) : (
+                  <div className="flex h-44 items-center justify-center bg-gradient-to-br from-[#E6F4EA] to-[#1F8A4C]/60">
+                    <ChefHat className="h-10 w-10 text-[#101814]/30" />
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-[#101814]">{name}</h3>
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#E6F4EA] px-3 py-1 text-xs text-[#101814]">
+                      <TimerIcon className="h-3.5 w-3.5" />
+                      {cookingTime}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-[#101814]/70">{ingredients.join(", ")}</p>
+                  <p className="mt-1 text-xs text-[#101814]/50">{instructions.length} steps</p>
+                  <Link href={`/recipes/${id}`} className="mt-4 inline-flex text-sm font-semibold text-[#1F8A4C] hover:underline">
+                    View recipe
+                  </Link>
                 </div>
-                <p className="mt-2 text-sm leading-relaxed text-[#101814]/70">{ingredients.join(", ")}</p>
-                <p className="mt-1 text-xs text-[#101814]/50">{instructions.length} steps</p>
-                <Link href={`/recipes/${id}`} className="mt-4 inline-flex text-sm font-semibold text-[#1F8A4C] hover:underline">
-                  View recipe
-                </Link>
               </div>
             );
           })}

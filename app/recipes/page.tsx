@@ -7,6 +7,7 @@ import { Camera, ChefHat, Clock, Search, X } from "lucide-react";
 import { db } from "@/db";
 import { recipes } from "@/db/schema";
 import { findSimilarRecipeIds } from "@/lib/pinecone";
+import { ensureRecipeImages } from "@/lib/recipeImage";
 
 type SearchParams = Promise<{ q?: string; search?: string }>;
 
@@ -53,6 +54,9 @@ async function Recipes({ searchParams }: { searchParams: SearchParams }) {
   } else {
     list = await db.query.recipes.findMany({ where: visible, orderBy: desc(recipes.createdAt), limit: 60 });
   }
+
+  // Older recipes have no photo yet: look them up once and save them
+  list = await ensureRecipeImages(list);
 
   return (
     <>

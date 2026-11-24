@@ -7,6 +7,7 @@ import { Camera, ChefHat, Clock, Plus, X } from "lucide-react";
 import { db } from "@/db";
 import { groceryItems, mealPlan, recipes } from "@/db/schema";
 import { WEEK_DAYS, type WeekDay } from "@/lib/weekDays";
+import { ensureRecipeImages } from "@/lib/recipeImage";
 import { removeFromMealPlan } from "./actions";
 import ClearWeekButton from "./ClearWeekButton";
 import GroceryList from "./GroceryList";
@@ -29,7 +30,7 @@ async function MealPlan() {
   if (!userId) redirect("/sign-in");
 
   // Every planned meal + its recipe, oldest first
-  const meals = await db
+  const plannedMeals = await db
     .select({
       id: mealPlan.id,
       day: mealPlan.day,
@@ -42,6 +43,15 @@ async function MealPlan() {
     .innerJoin(recipes, eq(mealPlan.recipeId, recipes.id))
     .where(eq(mealPlan.userId, userId))
     .orderBy(asc(mealPlan.createdAt));
+
+  // Older recipes have no photo yet: look each recipe up once and save it
+  const uniqueRecipes = new Map(
+    plannedMeals.map((m) => [m.recipeId, { id: m.recipeId, title: m.title, imageUrl: m.imageUrl }]),
+  );
+  const images = new Map(
+    (await ensureRecipeImages([...uniqueRecipes.values()])).map((r) => [r.id, r.imageUrl]),
+  );
+  const meals = plannedMeals.map((m) => ({ ...m, imageUrl: images.get(m.recipeId) ?? m.imageUrl }));
 
   const grocery = await db
     .select({

@@ -7,6 +7,7 @@ import { CalendarDays, ChefHat, Clock, Flame, Gauge, Lightbulb, ShoppingCart, Us
 import { db } from "@/db";
 import { groceryItems, mealPlan, recipes } from "@/db/schema";
 import type { WeekDay } from "@/lib/weekDays";
+import { ensureRecipeImages } from "@/lib/recipeImage";
 import BackButton from "./BackButton";
 import CookingSteps from "./CookingSteps";
 import PlanAndShop from "./PlanAndShop";
@@ -28,10 +29,13 @@ async function RecipeDetail({ params }: { params: Promise<{ id: string }> }) {
   if (!userId) redirect("/sign-in");
 
   const { id } = await params;
-  const recipe = await db.query.recipes.findFirst({ where: eq(recipes.id, id) });
+  const found = await db.query.recipes.findFirst({ where: eq(recipes.id, id) });
 
   // AI recipes are private to the person who asked Gemini for them
-  if (!recipe || (recipe.createdBy && recipe.createdBy !== userId)) notFound();
+  if (!found || (found.createdBy && found.createdBy !== userId)) notFound();
+
+  // Older recipes have no photo yet: look it up once and save it
+  const [recipe] = await ensureRecipeImages([found]);
 
   const [planned, onList] = await Promise.all([
     // Which days is this recipe already on?

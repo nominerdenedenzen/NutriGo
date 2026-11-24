@@ -3,11 +3,10 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { recipes as recipesTable } from '@/db/schema';
 import { addRecipesToPinecone } from '@/lib/pinecone';
+import { findRecipeImage } from '@/lib/recipeImage';
 
-// Create the Gemini client once (outside the function)
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Make sure a value from Gemini is a clean list of strings
 function toStringList(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.filter((s): s is string => typeof s === 'string' && s.trim() !== '').map((s) => s.trim());
@@ -49,7 +48,8 @@ Answer with only a JSON array. Each recipe must have exactly these fields:
 - "cookingTime": how long it takes, like "20 minutes" (string)
 - "ingredients": every ingredient needed (array of strings)
 - "instructions": short cooking steps in order (array of strings)
-- "nutrition": your best estimate for ONE serving, as {"calories": number, "protein": grams, "carbs": grams, "fat": grams}`,
+- "nutrition": your best estimate for ONE serving, as {"calories": number, "protein": grams, "carbs": grams, "fat": grams}
+- "imageQuery": the common name of this kind of dish in 1 or 2 lowercase words, used to find a photo, like "fried rice", "omelette", "salmon", "soup", "pasta" (string)`,
       config: { responseMimeType: 'application/json' },
     });
 
@@ -57,7 +57,7 @@ Answer with only a JSON array. Each recipe must have exactly these fields:
     const raw = JSON.parse(response.text ?? '[]');
     if (!Array.isArray(raw)) throw new Error('Gemini did not return a list');
 
-    const recipes = raw.map((recipe: Record<string, unknown>) => ({
+    const cleaned = raw.map((recipe: Record<string, unknown>) => ({
       id: `ai-${crypto.randomUUID()}`, // the same id is used in Supabase AND Pinecone
       name: typeof recipe.name === 'string' ? recipe.name : 'Untitled recipe',
       description: typeof recipe.description === 'string' ? recipe.description : '',
@@ -65,7 +65,16 @@ Answer with only a JSON array. Each recipe must have exactly these fields:
       cookingTime: typeof recipe.cookingTime === 'string' ? recipe.cookingTime : 'Unknown',
       ingredients: toStringList(recipe.ingredients),
       instructions: toStringList(recipe.instructions),
+      imageQuery: typeof recipe.imageQuery === 'string' ? recipe.imageQuery : undefined,
     }));
+
+    // 4b. Find a photo for each dish (all 3 at the same time). "" = none found, show a placeholder.
+    const recipes = await Promise.all(
+      cleaned.map(async ({ imageQuery, ...recipe }) => ({
+        ...recipe,
+        imageUrl: (await findRecipeImage(recipe.name, imageQuery)) ?? '',
+      })),
+    );
 
     // 5. Save the recipes in Supabase, so they get a page at /recipes/[id]
     await db.insert(recipesTable).values(
@@ -78,6 +87,7 @@ Answer with only a JSON array. Each recipe must have exactly these fields:
         ingredients: recipe.ingredients.map((name) => ({ name, measure: '' })),
         instructions: recipe.instructions.join('\n'),
         cookingTime: recipe.cookingTime,
+        imageUrl: recipe.imageUrl,
         createdBy: userId,
       })),
     );

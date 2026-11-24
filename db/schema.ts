@@ -1,4 +1,5 @@
 import type { WeekDay } from "@/lib/weekDays";
+import type { Activity, Goal, Sex } from "@/lib/nutritionPlan";
 import { pgTable, uuid, text, timestamp, jsonb, integer, real, primaryKey, boolean, unique } from "drizzle-orm/pg-core";
 
 export type Nutrition = { calories: number; protein: number; carbs: number; fat: number };
@@ -68,6 +69,18 @@ export const favourites = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.recipeId] })],
 );
+
+// One row per user: the body details used to work out their daily nutrition plan.
+export const profiles = pgTable("profiles", {
+  userId: text("user_id").primaryKey(), // Clerk user ID
+  sex: text("sex").$type<Sex>().notNull(),
+  age: integer("age").notNull(), // years
+  weightKg: real("weight_kg").notNull(),
+  heightCm: real("height_cm").notNull(),
+  activity: text("activity").$type<Activity>().notNull(),
+  goal: text("goal").$type<Goal>().default("maintain").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
 // USDA answers, per 100 g, so each ingredient is looked up only once.
 export const nutritionCache = pgTable("nutrition_cache", {
